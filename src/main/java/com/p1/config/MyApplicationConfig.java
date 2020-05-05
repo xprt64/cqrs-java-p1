@@ -4,7 +4,9 @@ import com.cqrs.aggregates.EventSourcedAggregateRepository;
 import com.cqrs.commands.*;
 import com.cqrs.events.*;
 import com.cqrs.event_store.memory.InMemoryEventStore;
+import com.cqrs.infrastructure.AbstractFactory;
 import com.cqrs.sql_event_store.SqlEventStore;
+import com.cqrs.util.ResourceReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -24,38 +26,52 @@ public class MyApplicationConfig {
 
     @Bean
     CommandDispatcher commandDispatcher() throws SQLException, NoSuchAlgorithmException {
-        final SqlEventStore eventStore = new SqlEventStore(
-            DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/eventstore", "root", "pw"),
-            "events_p1"
-        );
-        //eventStore.dropStore();
+
+        final SqlEventStore eventStore = eventStore();
+        eventStore.dropStore();
         eventStore.createStore();
-        return new DefaultCommandDispatcher(
-            new CommandSubscriberByMap(),
-            new CommandApplier(),
-            new EventSourcedAggregateRepository(
-                eventStore
-            ),
-            new DefaultSideEffectsDispatcher(
-                new CompositeEventDispatcher(
-                    new EventDispatcherBySubscriber(
-                        new EventSubscriberByMap(
-                            new AnnotatedReadModelEventHandlersMap(),
-                            eventListenerClass -> applicationContext.getBean(eventListenerClass),
-                            errorReporter()
-                        )
-                    ),
-                    new EventDispatcherBySubscriber(
-                        new EventSubscriberByMap(
-                            new AnnotatedOnceEventHandlersMap(),
-                            eventListenerClass -> applicationContext.getBean(eventListenerClass),
-                            errorReporter()
+        AbstractFactory abstractFactory = eventListenerClass -> applicationContext.getBean(eventListenerClass);
+        return new CommandDispatcherWithValidator(
+            new DefaultCommandDispatcher(
+                new CommandSubscriberByMap(),
+                new CommandApplier(),
+                new EventSourcedAggregateRepository(
+                    eventStore
+                ),
+                new DefaultSideEffectsDispatcher(
+                    new CompositeEventDispatcher(
+                        new EventDispatcherBySubscriber(
+                            new EventSubscriberByMap(
+                                new AnnotatedReadModelEventHandlersMap(),
+                                abstractFactory,
+                                errorReporter()
+                            )
+                        ),
+                        new EventDispatcherBySubscriber(
+                            new EventSubscriberByMap(
+                                new AnnotatedOnceEventHandlersMap(),
+                                abstractFactory,
+                                errorReporter()
+                            )
                         )
                     )
                 )
-
+            ),
+            new CommandValidatorBySubscriber(
+                new CommandValidatorSubscriberByMap(
+                    abstractFactory,
+                    new AnnotatedCommandValidatorsMap()
+                )
             )
+        );
+    }
+
+    private SqlEventStore eventStore() throws SQLException {
+        System.out.println(String.format("Connecting to %s", System.getenv("P1_DB_URL")));
+        return new SqlEventStore(
+            DriverManager.getConnection(
+                System.getenv("P1_DB_URL"), System.getenv("P1_DB_USER"), System.getenv("P1_DB_PW")),
+            "events_p1"
         );
     }
 
@@ -72,7 +88,8 @@ public class MyApplicationConfig {
                 System.out.println(
                     "Error dispatching event " +
                     eventWithMetaData.event.getClass().getCanonicalName() + " to " +
-                    listenerClass + "." + methodName + " " + throwable.getClass().toString() + " " + throwable.getMessage()
+                    listenerClass + "." + methodName + " " + throwable.getClass().toString() + " " +
+                    throwable.getMessage()
                 );
                 throwable.printStackTrace();
             }

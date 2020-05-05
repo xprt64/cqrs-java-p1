@@ -1,0 +1,52 @@
+package com.p1.sagas;
+
+import com.cqrs.annotations.CommandValidator;
+import com.cqrs.annotations.EventHandler;
+import com.cqrs.annotations.OnceEventHandler;
+import com.cqrs.events.MetaData;
+import com.p1.myaggregate1.commands.DepositMoney;
+import com.p1.myaggregate1.commands.WithdrawMoney;
+import com.p1.myaggregate1.events.MoneyDeposited;
+import com.p1.myaggregate1.events.MoneyWithdrawn;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+@Component
+public class CloseBankOnBankruptSaga {
+
+    private float total = 0;
+    private boolean bankClosed = false;
+
+    @OnceEventHandler
+    void on(MoneyWithdrawn event, MetaData metaData) {
+        total -= event.amount;
+
+        if (total == 0) {
+            System.out.println("!!! Bank closed due to insufficient capital.");
+            bankClosed = true;
+        }
+    }
+
+    @OnceEventHandler
+    void on(MoneyDeposited event) {
+        total += event.amount;
+    }
+
+    @CommandValidator
+    void validate(WithdrawMoney command) throws UnsupportedOperationException {
+        if (bankClosed) {
+            throw new UnsupportedOperationException("Money could not be withdrawn from this bank: Bank is closed.");
+        }
+    }
+
+    @CommandValidator
+    void validate(DepositMoney command) throws UnsupportedOperationException {
+        if (bankClosed) {
+            throw new UnsupportedOperationException("Money could not be deposited to this bank: Bank is closed.");
+        }
+    }
+}
