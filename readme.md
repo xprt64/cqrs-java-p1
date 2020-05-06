@@ -26,3 +26,11 @@ Este nevoie de acest tip de model pentru ca la procesarea evenimentelor se produ
 
 Exista un singur Saga in POC, CloseBankOnBankruptSaga, care inchide banca cand ramane fara capital 
 (protejeaza **Regula 2**).
+
+# Instalare/rulare #
+
+## Docker ##
+
+`docker build -t p1 . && docker run --rm --env-file=.env p1`
+
+## Docker-compose ##

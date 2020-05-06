@@ -3,16 +3,15 @@ package com.p1.config;
 import com.cqrs.aggregates.EventSourcedAggregateRepository;
 import com.cqrs.commands.*;
 import com.cqrs.events.*;
-import com.cqrs.event_store.memory.InMemoryEventStore;
 import com.cqrs.infrastructure.AbstractFactory;
 import com.cqrs.sql_event_store.SqlEventStore;
-import com.cqrs.util.ResourceReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import javax.inject.Inject;
 import java.security.NoSuchAlgorithmException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -21,8 +20,12 @@ import java.sql.SQLException;
 @ComponentScan("com.p1")
 public class MyApplicationConfig {
 
-    @Autowired
-    ApplicationContext applicationContext;
+    final ApplicationContext applicationContext;
+
+    @Inject
+    public MyApplicationConfig(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Bean
     CommandDispatcher commandDispatcher() throws SQLException, NoSuchAlgorithmException {
@@ -30,7 +33,7 @@ public class MyApplicationConfig {
         final SqlEventStore eventStore = eventStore();
         eventStore.dropStore();
         eventStore.createStore();
-        AbstractFactory abstractFactory = eventListenerClass -> applicationContext.getBean(eventListenerClass);
+        AbstractFactory abstractFactory = applicationContext::getBean;
         return new CommandDispatcherWithValidator(
             new DefaultCommandDispatcher(
                 new CommandSubscriberByMap(),

@@ -7,8 +7,9 @@ import com.p1.myaggregate1.commands.DepositMoney;
 import com.p1.myaggregate1.commands.WithdrawMoney;
 import com.p1.readmodels.AccountBalancesReadModel;
 import com.p1.readmodels.TotalMoneyInBankReadModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.inject.Inject;
 
 @Component
 class MyApp {
@@ -17,7 +18,7 @@ class MyApp {
     private final AccountBalancesReadModel accountBalancesReadModel;
     private final TotalMoneyInBankReadModel totalMoneyInBankReadModel;
 
-    @Autowired
+    @Inject
     public MyApp(
         CommandDispatcher commandDispatcher,
         AccountBalancesReadModel accountBalancesReadModel,

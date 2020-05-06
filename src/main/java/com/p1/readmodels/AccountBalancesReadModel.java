@@ -4,7 +4,6 @@ import com.cqrs.annotations.EventHandler;
 import com.cqrs.events.MetaData;
 import com.p1.myaggregate1.events.MoneyDeposited;
 import com.p1.myaggregate1.events.MoneyWithdrawn;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -16,7 +15,6 @@ public class AccountBalancesReadModel {
 
     private final ReadModelPersistence<Float> persistence;
 
-    @Autowired
     public AccountBalancesReadModel(ReadModelPersistence<Float> persistence) {
         this.persistence = persistence;
     }
