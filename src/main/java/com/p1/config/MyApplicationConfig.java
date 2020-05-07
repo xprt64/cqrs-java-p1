@@ -5,14 +5,12 @@ import com.cqrs.commands.*;
 import com.cqrs.events.*;
 import com.cqrs.infrastructure.AbstractFactory;
 import com.cqrs.sql_event_store.SqlEventStore;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import javax.inject.Inject;
-import java.security.NoSuchAlgorithmException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -20,19 +18,23 @@ import java.sql.SQLException;
 @ComponentScan("com.p1")
 public class MyApplicationConfig {
 
+    @Value("${P1_DB_URL}")
+    private String EVENTSTORE_DB_URL;
+
+    @Value("${P1_DB_PW}")
+    private String EVENTSTORE_DB_PW;
+
+    @Value("${P1_DB_USER}")
+    private String EVENTSTORE_DB_USER;
+
     final ApplicationContext applicationContext;
 
-    @Inject
     public MyApplicationConfig(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
     @Bean
-    CommandDispatcher commandDispatcher() throws SQLException, NoSuchAlgorithmException {
-
-        final SqlEventStore eventStore = eventStore();
-        eventStore.dropStore();
-        eventStore.createStore();
+    CommandDispatcher commandDispatcher(SqlEventStore eventStore) {
         AbstractFactory abstractFactory = applicationContext::getBean;
         return new CommandDispatcherWithValidator(
             new DefaultCommandDispatcher(
@@ -69,13 +71,20 @@ public class MyApplicationConfig {
         );
     }
 
-    private SqlEventStore eventStore() throws SQLException {
-        System.out.println(String.format("Connecting to %s", System.getenv("P1_DB_URL")));
-        return new SqlEventStore(
-            DriverManager.getConnection(
-                System.getenv("P1_DB_URL"), System.getenv("P1_DB_USER"), System.getenv("P1_DB_PW")),
-            "events_p1"
-        );
+    @Bean
+    SqlEventStore eventStore() {
+        System.out.println(String.format("Connecting to %s", EVENTSTORE_DB_URL));
+        try {
+            return new SqlEventStore(
+                DriverManager.getConnection(
+                    EVENTSTORE_DB_URL, EVENTSTORE_DB_USER, EVENTSTORE_DB_PW),
+                "events_p1"
+            );
+        } catch (SQLException throwables) {
+            System.out.println(String.format("Event store connection error: %s", throwables.getMessage()));
+            System.exit(1);
+            return null;
+        }
     }
 
     private ErrorReporter errorReporter() {

@@ -1,21 +1,16 @@
 package com.p1.sagas;
 
 import com.cqrs.annotations.CommandValidator;
-import com.cqrs.annotations.EventHandler;
 import com.cqrs.annotations.OnceEventHandler;
 import com.cqrs.events.MetaData;
 import com.p1.myaggregate1.commands.DepositMoney;
 import com.p1.myaggregate1.commands.WithdrawMoney;
 import com.p1.myaggregate1.events.MoneyDeposited;
 import com.p1.myaggregate1.events.MoneyWithdrawn;
-import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import javax.inject.Named;
 
-@Component
+@Named
 public class CloseBankOnBankruptSaga {
 
     private float total = 0;
@@ -25,7 +20,7 @@ public class CloseBankOnBankruptSaga {
     void on(MoneyWithdrawn event, MetaData metaData) {
         total -= event.amount;
 
-        if (total == 0) {
+        if (total <= 0) {
             System.out.println("!!! Bank closed due to insufficient capital.");
             bankClosed = true;
         }

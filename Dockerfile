@@ -18,10 +18,11 @@ RUN git clone https://github.com/xprt64/cqrs-java-sql-event-store.git &&\
 	mvn clean install && \
 	cd ..
 
-RUN git clone https://github.com/xprt64/cqrs-java-p1.git &&\
-	cd cqrs-java-p1 && \
-	mvn clean package
+ADD src src
+ADD pom.xml pom.xml
 
-# RUN java -jar /usr/src/cqrs-java-p1/target/p1-1.0-SNAPSHOT.jar
+RUN mvn clean package
 
-CMD ["java", "-jar", "/usr/src/cqrs-java-p1/target/p1-1.0-SNAPSHOT.jar"]
+# RUN java -jar /usr/src/target/p1-1.0-SNAPSHOT.jar
+
+CMD ["java", "-jar", "/usr/src/target/p1-1.0-SNAPSHOT.jar"]

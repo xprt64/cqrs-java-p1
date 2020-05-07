@@ -4,11 +4,11 @@ import com.cqrs.annotations.EventHandler;
 import com.cqrs.events.MetaData;
 import com.p1.myaggregate1.events.MoneyDeposited;
 import com.p1.myaggregate1.events.MoneyWithdrawn;
-import org.springframework.stereotype.Component;
 
+import javax.inject.Named;
 import java.util.HashMap;
 
-@Component
+@Named
 public class AccountBalancesReadModel {
 
     public static final String TABLE_NAME = "AccountBalancesReadModel";

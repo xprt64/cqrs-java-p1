@@ -1,22 +1,16 @@
 package com.p1.readmodels;
 
-import org.springframework.stereotype.Component;
-
+import javax.inject.Named;
 import java.util.HashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-@Component
+@Named
 public class ReadModelPersistence<EntityType> {
     private final HashMap<String, HashMap<String, EntityType>> entitiesPerTable = new HashMap<>();
 
     public HashMap<String, EntityType> entities(String tableName){
-        HashMap<String, EntityType> all = entitiesPerTable.get(tableName);
-        if(all == null){
-            all = new HashMap<>();
-            entitiesPerTable.put(tableName,all );
-        }
-        return all;
+        return entitiesPerTable.computeIfAbsent(tableName, k -> new HashMap<>());
     }
 
     public void save(String tableName, String entityId, EntityType item) {

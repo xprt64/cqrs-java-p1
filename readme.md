@@ -34,3 +34,5 @@ Exista un singur Saga in POC, CloseBankOnBankruptSaga, care inchide banca cand r
 `docker build -t p1 . && docker run --rm --env-file=.env p1`
 
 ## Docker-compose ##
+
+@todo

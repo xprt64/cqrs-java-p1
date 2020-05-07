@@ -7,11 +7,11 @@ import com.p1.myaggregate1.commands.DepositMoney;
 import com.p1.myaggregate1.commands.WithdrawMoney;
 import com.p1.readmodels.AccountBalancesReadModel;
 import com.p1.readmodels.TotalMoneyInBankReadModel;
-import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
-@Component
+@Named
 class MyApp {
 
     private final CommandDispatcher commandDispatcher;
