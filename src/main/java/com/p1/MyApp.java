@@ -8,7 +8,6 @@ import com.p1.myaggregate1.commands.WithdrawMoney;
 import com.p1.readmodels.AccountBalancesReadModel;
 import com.p1.readmodels.TotalMoneyInBankReadModel;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
@@ -18,7 +17,6 @@ class MyApp {
     private final AccountBalancesReadModel accountBalancesReadModel;
     private final TotalMoneyInBankReadModel totalMoneyInBankReadModel;
 
-    @Inject
     public MyApp(
         CommandDispatcher commandDispatcher,
         AccountBalancesReadModel accountBalancesReadModel,
