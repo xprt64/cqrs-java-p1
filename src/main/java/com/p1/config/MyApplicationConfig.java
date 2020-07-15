@@ -3,7 +3,9 @@ package com.p1.config;
 import com.cqrs.aggregates.EventSourcedAggregateRepository;
 import com.cqrs.commands.*;
 import com.cqrs.events.*;
+import com.cqrs.events.ErrorReporter;
 import com.cqrs.infrastructure.AbstractFactory;
+import com.cqrs.questions.*;
 import com.cqrs.sql_event_store.SqlEventStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -35,7 +37,6 @@ public class MyApplicationConfig {
 
     @Bean
     CommandDispatcher commandDispatcher(SqlEventStore eventStore) {
-        AbstractFactory abstractFactory = applicationContext::getBean;
         return new CommandDispatcherWithValidator(
             new DefaultCommandDispatcher(
                 new CommandSubscriberByMap(),
@@ -48,14 +49,14 @@ public class MyApplicationConfig {
                         new EventDispatcherBySubscriber(
                             new EventSubscriberByMap(
                                 new AnnotatedReadModelEventHandlersMap(),
-                                abstractFactory,
+                                applicationContext::getBean,
                                 errorReporter()
                             )
                         ),
                         new EventDispatcherBySubscriber(
                             new EventSubscriberByMap(
                                 new AnnotatedOnceEventHandlersMap(),
-                                abstractFactory,
+                                applicationContext::getBean,
                                 errorReporter()
                             )
                         )
@@ -64,7 +65,7 @@ public class MyApplicationConfig {
             ),
             new CommandValidatorBySubscriber(
                 new CommandValidatorSubscriberByMap(
-                    abstractFactory,
+                    applicationContext::getBean,
                     new AnnotatedCommandValidatorsMap()
                 )
             )
@@ -106,5 +107,37 @@ public class MyApplicationConfig {
                 throwable.printStackTrace();
             }
         };
+    }
+
+    @Bean
+    Asker asker(){
+        return new DefaultAsker(
+            applicationContext::getBean,
+            new AnswererResolverByMap(
+                new AnnotatedQuestionAnswerersMap()
+            ),
+            new SubscriberResolverByMap(
+                new AnnotatedQuestionSubscribersMap()
+            )
+        );
+    }
+
+    @Bean
+    QuestionPublisher questionPublisher(){
+        return new DefaultQuestionPublisher(
+            new SubscriberResolverByMap(
+                new AnnotatedQuestionSubscribersMap()
+            ),
+            applicationContext::getBean,
+            (listenerInstance, listenerClass, methodName, question, throwable) -> {
+                System.out.println(
+                    "Error publishing question " +
+                        question.getClass().getCanonicalName() + " to " +
+                        listenerClass + "." + methodName + " " + throwable.getClass().toString() + " " +
+                        throwable.getMessage()
+                );
+                throwable.printStackTrace();
+            }
+        );
     }
 }
