@@ -38,7 +38,7 @@
         <dependency>
             <groupId>com.github.xprt64.cqrs</groupId>
             <artifactId>sql-event-store</artifactId>
-            <version>1.2-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
