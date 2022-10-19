@@ -31,12 +31,12 @@
             <version>5.2.6.RELEASE</version>
         </dependency>
         <dependency>
-            <groupId>com.cqrs</groupId>
+            <groupId>com.github.xprt64.cqrs</groupId>
             <artifactId>core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.cqrs</groupId>
+            <groupId>com.github.xprt64.cqrs</groupId>
             <artifactId>sql-event-store</artifactId>
             <version>1.2-SNAPSHOT</version>
         </dependency>
